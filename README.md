@@ -22,6 +22,7 @@ This project takes a bank's consumer complaints (a CFPB-style export) and turns 
 │   ├── interim/                    # outputs of 02
 │   └── output/                     # outputs of 04
 ├── models/                         # trained classifier and Chroma vector store
+├── docs/                           # images used in this README
 ├── requirements.txt
 └── .env                            # API credentials (not committed)
 ```
@@ -73,13 +74,11 @@ Run the notebooks in order. Each one reads what the previous one saved.
 - Note: the classifier is scored on how well it reproduces K-Means. There are no human labels to measure accuracy against.
 
 ### 04 · Operations agent
-The agent is a **LangGraph** workflow:
+The agent is a **LangGraph** workflow. The three tools run in parallel, and triage waits for all of them:
 
-```
-START ─┬─ classify ────┐
-       ├─ similar cases ┼─ triage ─ draft ─ check ─ save ─ END
-       └─ risk check ──┘
-```
+<p align="center">
+  <img src="docs/agent_graph.png" alt="Agent graph: classify, similar_cases and check_risk run in parallel, then triage, draft, save" width="360">
+</p>
 
 1. **Classify.** It predicts the cluster, maps it to one of the 12 topics and gives a confidence score. The review threshold is calibrated on the held-out test set, so the team can trade coverage against accuracy.
 2. **Similar cases (RAG).** It retrieves the closest past complaints, and how they ended, from a **Chroma** vector store through LangChain.
